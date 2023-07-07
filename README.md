@@ -14,3 +14,12 @@ fitur dari bot itu antara lain
 digunakan jika anda ingin push kontak telephone agar kontak anda semakin banyak
 
 dan masih banyak lagi enjoyyy
+
+# Readme
+untuk memperbagus, ada beberapa file img yang perlu anda tambahkan (opsional) seperti qris.jpg, suara.mp3, dan thumbnail.jpg 
+
+# thanks
+-SovBotz Team
+-Sovetsky soyuz
+-gerbotz Team
+-Okth organisasi
