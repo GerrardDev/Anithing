@@ -8,7 +8,7 @@ menggunakan adiwajshing/baileys node
  keunggulan bot whatsapp kami adalah 100% gratis dan 100% no enc anda bisa memanipulasi program tersebut
 
 # Fitur
-fitur dari bot inu antara lain
+fitur dari bot itu antara lain
 
 # push kontak
 digunakan jika anda ingin push kontak telephone agar kontak anda semakin banyak
