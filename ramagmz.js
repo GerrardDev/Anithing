@@ -1,0 +1,250 @@
+
+"use strict";
+const { BufferJSON, WA_DEFAULT_EPHEMERAL, proto, prepareWAMessageMedia, areJidsSameUser, getContentType } = require('@adiwajshing/baileys')
+const { downloadContentFromMessage, generateWAMessage, generateWAMessageFromContent, MessageType, buttonsMessage } = require("@adiwajshing/baileys")
+const { exec, spawn } = require("child_process");
+const { color, bgcolor, pickRandom, randomNomor } = require('./lib/console.js')
+const { isUrl, getRandom, getGroupAdmins, runtime, sleep, reSize, makeid, fetchJson, getBuffer } = require("./lib/myfunc");
+const fs = require("fs");
+const ms = require("ms");
+const chalk = require('chalk');
+const axios = require("axios");
+const colors = require('colors/safe');
+const ffmpeg = require("fluent-ffmpeg");
+const moment = require("moment-timezone");
+const setting = JSON.parse(fs.readFileSync('./setting.json'));
+const mess = JSON.parse(fs.readFileSync('./mess.json'));
+moment.tz.setDefault("Asia/Jakarta").locale("id");
+module.exports = async(ramz, msg, m, setting, store) => {
+try {
+let { ownerNumber, botName } = setting
+const { type, quotedMsg, mentioned, now, fromMe, isBaileys } = msg
+if (msg.isBaileys) return
+const jam = moment.tz('asia/jakarta').format('HH:mm:ss')
+const tanggal = moment().tz("Asia/Jakarta").format("ll")
+let dt = moment(Date.now()).tz('Asia/Jakarta').locale('id').format('a')
+const ucapanWaktu = "Selamat "+dt.charAt(0).toUpperCase() + dt.slice(1)
+const content = JSON.stringify(msg.message)
+const from = msg.key.remoteJid
+const time = moment(new Date()).format("HH:mm");
+var chats = (type === 'conversation' && msg.message.conversation) ? msg.message.conversation : (type === 'imageMessage') && msg.message.imageMessage.caption ? msg.message.imageMessage.caption : (type === 'videoMessage') && msg.message.videoMessage.caption ? msg.message.videoMessage.caption : (type === 'extendedTextMessage') && msg.message.extendedTextMessage.text ? msg.message.extendedTextMessage.text : (type === 'buttonsResponseMessage') && quotedMsg.fromMe && msg.message.buttonsResponseMessage.selectedButtonId ? msg.message.buttonsResponseMessage.selectedButtonId : (type === 'templateButtonReplyMessage') && quotedMsg.fromMe && msg.message.templateButtonReplyMessage.selectedId ? msg.message.templateButtonReplyMessage.selectedId : (type === 'messageContextInfo') ? (msg.message.buttonsResponseMessage?.selectedButtonId || msg.message.listResponseMessage?.singleSelectReply.selectedRowId) : (type == 'listResponseMessage') && quotedMsg.fromMe && msg.message.listResponseMessage.singleSelectReply.selectedRowId ? msg.message.listResponseMessage.singleSelectReply.selectedRowId : ""
+if (chats == undefined) { chats = '' }
+const prefix = /^[°•π÷×¶∆£¢€¥®™✓_=|~!?#$%^&.+-,\/\\©^]/.test(chats) ? chats.match(/^[°•π÷×¶∆£¢€¥®™✓_=|~!?#$%^&.+-,\/\\©^]/gi) : '#'
+const isGroup = msg.key.remoteJid.endsWith('@g.us')
+const sender = isGroup ? (msg.key.participant ? msg.key.participant : msg.participant) : msg.key.remoteJid
+const isOwner = [`${setting.ownerNumber}`,"6285791220179@s.whatsapp.net","6285806240904@s.whatsapp.net"].includes(sender) ? true : false
+const pushname = msg.pushName
+const body = chats.startsWith(prefix) ? chats : ''
+const budy = (type === 'conversation') ? msg.message.conversation : (type === 'extendedTextMessage') ? msg.message.extendedTextMessage.text : ''
+const args = body.trim().split(/ +/).slice(1);
+const q = args.join(" ");
+const isCommand = body.startsWith(prefix);
+const command = body.slice(1).trim().split(/ +/).shift().toLowerCase()
+const isCmd = isCommand ? body.slice(1).trim().split(/ +/).shift().toLowerCase() : null;
+const botNumber = ramz.user.id.split(':')[0] + '@s.whatsapp.net'
+const groupMetadata = isGroup ? await ramz.groupMetadata(from) : ''
+const groupName = isGroup ? groupMetadata.subject : ''
+const groupId = isGroup ? groupMetadata.id : ''
+const participants = isGroup ? await groupMetadata.participants : ''
+const groupMembers = isGroup ? groupMetadata.participants : ''
+const groupAdmins = isGroup ? getGroupAdmins(groupMembers) : ''
+const isBotGroupAdmins = groupAdmins.includes(botNumber) || false
+const isGroupAdmins = groupAdmins.includes(sender)
+const quoted = msg.quoted ? msg.quoted : msg
+const isImage = (type == 'imageMessage')
+const isQuotedMsg = (type == 'extendedTextMessage')
+const isMedia = (type === 'imageMessage' || type === 'videoMessage');
+const isQuotedImage = isQuotedMsg ? content.includes('imageMessage') ? true : false : false
+const isVideo = (type == 'videoMessage')
+const isQuotedVideo = isQuotedMsg ? content.includes('videoMessage') ? true : false : false
+const isSticker = (type == 'stickerMessage')
+const isQuotedSticker = isQuotedMsg ? content.includes('stickerMessage') ? true : false : false 
+const isQuotedAudio = isQuotedMsg ? content.includes('audioMessage') ? true : false : false
+var dataGroup = (type === 'buttonsResponseMessage') ? msg.message.buttonsResponseMessage.selectedButtonId : ''
+var dataPrivate = (type === "messageContextInfo") ? (msg.message.buttonsResponseMessage?.selectedButtonId || msg.message.listResponseMessage?.singleSelectReply.selectedRowId) : ''
+const isButton = dataGroup.length !== 0 ? dataGroup : dataPrivate
+var dataListG = (type === "listResponseMessage") ? msg.message.listResponseMessage.singleSelectReply.selectedRowId : ''
+var dataList = (type === 'messageContextInfo') ? (msg.message.buttonsResponseMessage?.selectedButtonId || msg.message.listResponseMessage?.singleSelectReply.selectedRowId) : ''
+const isListMessage = dataListG.length !== 0 ? dataListG : dataList
+function mentions(teks, mems = [], id) {
+if (id == null || id == undefined || id == false) {
+let res = ramz.sendMessage(from, { text: teks, mentions: mems })
+return res
+} else {
+let res = ramz.sendMessage(from, { text: teks, mentions: mems }, { quoted: msg })
+return res
+}
+}
+const mentionByTag = type == "extendedTextMessage" && msg.message.extendedTextMessage.contextInfo != null ? msg.message.extendedTextMessage.contextInfo.mentionedJid : []
+const mentionByReply = type == "extendedTextMessage" && msg.message.extendedTextMessage.contextInfo != null ? msg.message.extendedTextMessage.contextInfo.participant || "" : ""
+const mention = typeof(mentionByTag) == 'string' ? [mentionByTag] : mentionByTag
+mention != undefined ? mention.push(mentionByReply) : []
+const mentionUser = mention != undefined ? mention.filter(n => n) : []
+const reply = (teks) => {ramz.sendMessage(from, { text: teks }, { quoted: msg })}
+const fkontak = { key: {fromMe: false,participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { 'contactMessage': { 'displayName': `Bot Created By ${setting.ownerName}\n`, 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:XL;${setting.botName},;;;\nFN:Halo ${pushname},\nitem1.TEL;waid=${sender.split('@')[0]}:${sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`, 'jpegThumbnail': { url: setting.thumb }}}}
+function parseMention(text = '') {
+return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(v => v[1] + '@s.whatsapp.net')
+}
+if (isGroup && isCmd) {
+console.log(colors.green.bold("[Group]") + " " + colors.brightCyan(time,) + " " + colors.black.bgYellow(command) + " " + colors.green("from") + " " + colors.blue(groupName));
+}
+if (!isGroup && isCmd) {
+console.log(colors.green.bold("[Private]") + " " + colors.brightCyan(time,) + " " + colors.black.bgYellow(command) + " " + colors.green("from") + " " + colors.blue(pushname));
+}
+switch(command) {
+	case 'help':
+	case 'menu':{
+		const mark_slebew = '0@s.whatsapp.net'
+const more = String.fromCharCode(8206)
+const strip_ny = more.repeat(4001)
+var footer_nya =`Creator by - ${setting.ownerName}`
+	let menu = `━━━━━[ ${setting.botName} ]━━━━━
+
+
+┏━━━『 𝘿𝘼𝙏𝘼 𝘽𝙊𝙏 』━━━━━◧
+┃
+┣» ᴄʀᴇᴀᴛᴏʀ : @${setting.kontakOwner}
+┣» ʙᴏᴛ ɴᴀᴍᴇ : ${setting.botName}
+┣» ᴏᴡɴᴇʀ ɴᴀᴍᴇ : ${setting.ownerName} 
+┣» ʀᴜɴɴɪɴɢ : ${setting.run}
+┃
+┗━━━━━━━━━━━━━━━━━━◧
+┏━━━━『 𝙇𝙞𝙨𝙩 𝙈𝙚𝙣𝙪 』━━━━◧
+┃
+┣» .pushkontak
+┣» .jpm
+┣» .pushkontakv2 (id|text)
+┣» .share (ke 800+ nomor)
+┣» .cekmember 
+┣» .idgroup 
+┣» .id
+┣» .kick
+┗━━━━━━━━━━━━━━━━━━◧`
+ramz.sendMessage(from, {
+text: menu, 
+mentions: [setting.ownerNumber, sender]},
+ {quoted: fkontak})
+ ramz.sendMessage(from, {audio: {url: `./gambar/suara.mp3`}, mimetype:'audio/mpeg', ptt:true})
+}
+break
+case "idgroup": {
+if (!isOwner) return reply(`Khusus Owner`)
+reply(`Waitt`)
+let getGroups = await ramz.groupFetchAllParticipating()
+let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
+let anu = groups.map((v) => v.id)
+let tekss = `Total Group : ${anu.length} Group\n\n`
+for (let xnxx of anu) {
+tekss += `${xnxx}\n`
+}
+case 'kick': {
+		if (!m.isGroup) throw mess.group
+        if (!isBotAdmins) throw mess.botAdmin
+        if (!isAdmins) throw mess.admin
+		let users = m.mentionedJid[0] ? m.mentionedJid : m.quoted ? [m.quoted.sender] : [text.replace(/[^0-9]/g, '')+'@s.whatsapp.net']
+		await ramz.groupParticipantsUpdate(m.chat, users, 'remove').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+	}
+	break
+reply(tekss + `\nJika Mau Cek Member Gunakan Command ${prefix}cekmember idgroup\nSalin Id Group Salah Satu Di Atas`)
+}
+
+default:
+if ((chats) && ["assalamu'alaikum", "Assalamu'alaikum", "Assalamualaikum", "assalamualaikum", "Assalammualaikum", "assalammualaikum", "Asalamualaikum", "asalamualaikum", "Asalamu'alaikum", " asalamu'alaikum"].includes(budy) && !isCmd) {
+  ramz.sendMessage(from, { 
+    text: 'Wa\'alaikumussalam ' + '\u200E' + '\u{1F44B}', // '\u{1F44B}' adalah kode Unicode untuk emoji tangan yang memberi salam WhatsApp
+  });
+}
+break
+case 'share':{
+if (!isOwner) return reply(mess.OnlyOwner)
+if (!q) return reply(`Masukan parameter text\n*Contoh:*\n${prefix+command} hallo`)
+reply(mess.wait)
+let db_orang = JSON.parse(fs.readFileSync('./database/pengguna.json'));
+let data_teks = `${q}`
+for (let pler of db_orang){ 
+var rama = {text: data_teks, footer: '©broadcast'}
+ramz.sendMessage(pler, rama)
+await sleep(10000)
+}
+reply(`*Sukses mengirim broadcast text ke ${db_orang.length} user*`)
+}
+break
+case "cekmember": {
+if (!isOwner) return reply(`Khusus Owner`)
+if (!q) return reply("Id Nya Mana Kak?")
+let cekmd = await ramz.groupMetadata(q)
+let txrk = await ramz.sendMessage(from, { text: `Nama Group : ${cekmd.subject}\nMember : ${cekmd.participants.length} Orang` }, { quoted: msg })
+await ramz.sendMessage(from, { text: `Jika Mau Push Kontak Gunakan Command Di Bawah\n${prefix}pushkontak ${q}|Hallo Save KirBotz\n\nCommand Di Atas Teks Nya Hanya Contoh Jadi Ubah Aja Yaa` }, { quoted: txrk })
+}
+break
+case "pushkontak":
+if (!isOwner) return reply(mess.OnlyOwner)
+if (!q) return reply(`Penggunaan Salah Silahkan Gunakan Command Seperti Ini\n${prefix+command} idgroup|tekspushkontak\nUntuk Liat Id Group Silahkan Ketik .idgroup`)
+await reply("prosas")
+const hay = q.split("|")[1]
+const groupMetadataa = !isGroup? await client.groupMetadata(`${q.split("|")[0]}`).catch(e => {}) : ""
+const participantss = !isGroup? await groupMetadataa.participants : ""
+const halls = await participantss.filter(v => v.id.endsWith('.net')).map(v => v.id)
+for (let mem of halls) {
+client.sendMessage(mem, { text: hay })
+await sleep(5000)
+}
+reply("Succes!")
+break
+case "pushkontakv2":
+if (!isOwner) return reply(mess.OnlyOwner)
+if (!isGroup) return reply(`Khusus Grop`)
+if (!q) return reply(`Penggunaan Salah Silahkan Gunakan Command Seperti Ini\n${prefix+command} teks`)
+await reply("Prosess ngab")
+const halsss = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
+for (let men of halsss) {
+ramz.sendMessage(men, { text: q })
+await sleep(5000)
+}
+reply("Succes!")
+break
+case 'id':
+reply(from)
+break 
+case "jpm":{
+             if (!isOwner) return reply(`Khusus owner wir 😂`)
+             if (!q) return reply(`Gunakan:\n${prefix + command} Text nya`)
+             let getGroups = await ramz.groupFetchAllParticipating();
+             let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1]);
+             let anu = groups.map((v) => v.id);
+             reply(`Terdeteksi ${anu.length} Group Chat, Waktu Selesai ${anu.length * 1.5} detik`);
+             for (let i of anu) {
+             await sleep(5000);
+             let txt = `${q}`;
+             ramz.sendText(i, txt);
+              }
+              reply(`Suksess Jpm.. Minimal makasih🥱`);
+              }
+              break
+default:
+if ((chats) && ["assalamu'alaikum", "Assalamu'alaikum", "Assalamualaikum", "assalamualaikum", "Assalammualaikum", "assalammualaikum", "Asalamualaikum", "asalamualaikum", "Asalamu'alaikum", " asalamu'alaikum"].includes(budy) && !isCmd) {
+ramz.sendMessage(from, { text: `${pickRandom(["Wa'alaikumussalam","Wa'alaikumussalam Wb.","Wa'alaikumussalam Wr. Wb.","Wa'alaikumussalam Warahmatullahi Wabarakatuh"])}`})
+}
+if ((chats) && ["tes", "Tes", "TES", "Test", "test", "ping", "Ping"].includes(budy) && !isCmd) {
+ramz.sendMessage(from, { text: `${runtime(process.uptime())}*⏰`})
+}
+
+}} catch (err) {
+console.log(color('[ERROR]', 'red'), err)
+const isGroup = msg.key.remoteJid.endsWith('@g.us')
+const sender = isGroup ? (msg.key.participant ? msg.key.participant : msg.participant) : msg.key.remoteJid
+const moment = require("moment-timezone");
+const jam = moment.tz('asia/jakarta').format('HH:mm:ss')
+const tanggal = moment().tz("Asia/Jakarta").format("ll")
+let kon_erorr = {"tanggal": tanggal, "jam": jam, "error": err, "user": sender}
+db_error.push(kon_erorr)
+fs.writeFileSync('./database/error.json', JSON.stringify(db_error))
+var errny =`*SERVER ERROR*
+*Dari:* @${sender.split("@")[0]}
+*Jam:* ${jam}
+*Tanggal:* ${tanggal}
+*Tercatat:* ${db_error.length}
+*Type:* ${err}`
+ramz.sendMessage(setting.ownerNumber, {text:errny, mentions:[sender]})
+}}
+
