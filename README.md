@@ -17,6 +17,8 @@ dan masih banyak lagi enjoyyy
 
 # Readme
 untuk memperbagus, ada beberapa file img yang perlu anda tambahkan (opsional) seperti qris.jpg, suara.mp3, dan thumbnail.jpg 
+# node
+anda perlu menambahkan node adiwajshing ke dalam file bot tersebut atau anda perlu npm i pada panet pterodactyl
 
 # thanks
 -SovBotz Team
